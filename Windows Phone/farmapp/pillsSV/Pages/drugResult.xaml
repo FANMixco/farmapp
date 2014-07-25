@@ -1,0 +1,102 @@
+﻿<phone:PhoneApplicationPage
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:telerikInput="clr-namespace:Telerik.Windows.Controls;assembly=Telerik.Windows.Controls.Input"
+    xmlns:maps="clr-namespace:Microsoft.Phone.Maps.Controls;assembly=Microsoft.Phone.Maps"
+    x:Class="pillsSV.pages.drugResult"
+    mc:Ignorable="d"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait"  Orientation="Portrait"
+    shell:SystemTray.IsVisible="True" Loaded="PhoneApplicationPage_Loaded">
+
+    <!--LayoutRoot is the root grid where all page content is placed-->
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+        <phone:Pivot>
+            <phone:Pivot.Title>
+                <TextBlock x:Name="txtName"/>
+            </phone:Pivot.Title>
+
+            <!--Pivot item one-->
+            <phone:PivotItem Header="información">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock TextWrapping="Wrap" Text="descripción:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}"/>
+                        <TextBlock x:Name="lblADescription" TextWrapping="Wrap" Text="" Style="{StaticResource PhoneTextNormalStyle}"/>
+                        <TextBlock TextWrapping="Wrap" Text="dirección:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}"/>
+                        <TextBlock x:Name="lblAddress" TextWrapping="Wrap" Text="" Style="{StaticResource PhoneTextNormalStyle}"/>
+                        <TextBlock TextWrapping="Wrap" Text="teléfonos:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}"/>
+                        <TextBlock x:Name="lblPhone" TextWrapping="Wrap" Text="" Style="{StaticResource PhoneTextNormalStyle}"/>
+                        <TextBlock TextWrapping="Wrap" Text="puntuación:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}"/>
+                        <telerikInput:RadRating x:Name="iRating" Margin="12,0,0,0" />
+                    </StackPanel>
+                </Grid>
+            </phone:PivotItem>
+
+            <!--Pivot item two-->
+            <phone:PivotItem Header="medicamentos">
+                <Grid>
+                    <ScrollViewer>
+                        <phone:LongListSelector x:Name="llsResultsM" Margin="12,0,0,0">
+                            <phone:LongListSelector.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding name}"/>
+                                        <TextBlock TextWrapping="Wrap" Text=", "/>
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding concentration}"/>
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding units}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </phone:LongListSelector.ItemTemplate>
+                        </phone:LongListSelector>
+                    </ScrollViewer>
+                </Grid>
+            </phone:PivotItem>
+
+            <phone:PivotItem Header="ubicación">
+                <maps:Map x:Name="mapLocation" />
+            </phone:PivotItem>
+
+            <phone:PivotItem Header="comentarios">
+                <Grid>
+                    <ScrollViewer>
+                        <phone:LongListSelector x:Name="llsComments" Margin="12,0,0,0">
+                            <phone:LongListSelector.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding name}"/>
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding comment}"/>
+
+                                        <telerikInput:RadRating HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Value="{Binding rating}"/>
+                                        <Border BorderBrush="Black" BorderThickness="0,0,0,1" HorizontalAlignment="Left" />
+
+                                    </StackPanel>
+                                </DataTemplate>
+                            </phone:LongListSelector.ItemTemplate>
+                        </phone:LongListSelector>
+                    </ScrollViewer>
+
+                </Grid>
+
+            </phone:PivotItem>
+
+        </phone:Pivot>
+    </Grid>
+
+    <phone:PhoneApplicationPage.ApplicationBar>
+        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
+            <shell:ApplicationBarIconButton x:Name="btnComment" IconUri="/Assets/AppBar/add.png" Text="Comentario" Click="btnComment_Click"/>
+            <shell:ApplicationBar.MenuItems>
+                <shell:ApplicationBarMenuItem x:Name="menuProfile" Text="perfil" Click="menuProfile_Click"/>
+                <shell:ApplicationBarMenuItem x:Name="menuHelp" Text="ayuda" Click="menuHelp_Click"/>
+                <shell:ApplicationBarMenuItem x:Name="menuAbout" Text="acerca de" Click="menuAbout_Click"/>
+            </shell:ApplicationBar.MenuItems>
+        </shell:ApplicationBar>
+    </phone:PhoneApplicationPage.ApplicationBar>
+</phone:PhoneApplicationPage>

@@ -1,0 +1,74 @@
+﻿<phone:PhoneApplicationPage
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:telerikInput="clr-namespace:Telerik.Windows.Controls;assembly=Telerik.Windows.Controls.Input"
+    x:Class="pillsSV.pages.medResult"
+    mc:Ignorable="d"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait"  Orientation="Portrait"
+    shell:SystemTray.IsVisible="True" Loaded="PhoneApplicationPage_Loaded">
+
+    <!--LayoutRoot is the root grid where all page content is placed-->
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+        <!--Pivot Control-->
+        <phone:Pivot>
+
+            <phone:Pivot.Title>
+                <TextBlock x:Name="txtName"/>
+            </phone:Pivot.Title>
+
+            <!--Pivot item one-->
+            <phone:PivotItem Header="resumen">
+                <Grid>
+                    <ScrollViewer>
+                        <StackPanel>
+                            <TextBlock TextWrapping="Wrap" Text="concentración:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}"/>
+                            <TextBlock x:Name="txtConcentration" TextWrapping="Wrap"  Style="{StaticResource PhoneTextNormalStyle}"/>
+                            <TextBlock TextWrapping="Wrap" Text="unidades:" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}"/>
+                            <TextBlock x:Name="txtUnits" TextWrapping="Wrap"  Style="{StaticResource PhoneTextNormalStyle}"/>
+                            <TextBlock TextWrapping="Wrap" Text="precio:" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}"/>
+                            <TextBlock x:Name="txtPrice" TextWrapping="Wrap"  Style="{StaticResource PhoneTextNormalStyle}"/>
+                            <TextBlock TextWrapping="Wrap" Text="categoría:" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}"/>
+                            <TextBlock x:Name="txtCat" TextWrapping="Wrap" Style="{StaticResource PhoneTextNormalStyle}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </phone:PivotItem>
+
+            <!--Pivot item two-->
+            <phone:PivotItem Header="farmacias">
+                <Grid>
+                    <ScrollViewer>
+                        <phone:LongListSelector x:Name="llsResultsDS" SelectionChanged="llsResultsDS_SelectionChanged" Margin="12,0,0,0">
+                            <phone:LongListSelector.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding name}" Style="{StaticResource PhoneTextNormalStyle}"/>
+                                        <telerikInput:RadRating Value="{Binding rating}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </phone:LongListSelector.ItemTemplate>
+                        </phone:LongListSelector>
+                    </ScrollViewer>
+                </Grid>
+            </phone:PivotItem>
+        </phone:Pivot>
+    </Grid>
+    <phone:PhoneApplicationPage.ApplicationBar>
+        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
+            <shell:ApplicationBarIconButton x:Name="btnShare" IconUri="/Assets/AppBar1/share.png" Text="compartir" Click="btnShare_Click"/>
+            <shell:ApplicationBar.MenuItems>
+                <shell:ApplicationBarMenuItem x:Name="menuReport" Text="reportar" Click="menuReport_Click"/>
+                <shell:ApplicationBarMenuItem x:Name="menuProfile" Text="perfil" Click="menuProfile_Click"/>
+                <shell:ApplicationBarMenuItem x:Name="menuHelp" Text="ayuda" Click="menuHelp_Click"/>
+                <shell:ApplicationBarMenuItem x:Name="menuAbout" Text="acerca de" Click="menuAbout_Click"/>
+            </shell:ApplicationBar.MenuItems>
+        </shell:ApplicationBar>
+    </phone:PhoneApplicationPage.ApplicationBar>
+</phone:PhoneApplicationPage>
