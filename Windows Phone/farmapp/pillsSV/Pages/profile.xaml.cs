@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using pillsSV.Classes;
 using Microsoft.Phone.Reactive;
 using Newtonsoft.Json;
+using sqlite.Classes;
 
 namespace pillsSV.pages
 {
@@ -31,9 +32,7 @@ namespace pillsSV.pages
             if (btnSignIn.Content.ToString() == "ingresar")
             {
                 login(true);
-
                 updateInfo();
-
             }
             else
                 logout();
@@ -43,7 +42,6 @@ namespace pillsSV.pages
         {
             if (cnnstatus.status())
             {
-
                 WebClient w = new WebClient();
 
                 Observable
@@ -69,10 +67,10 @@ namespace pillsSV.pages
                     }
                 });
                 w.DownloadStringAsync(
-                new Uri("Necesita tener conexión a internet para está opción." + infoText.Text + "&email=" + emailText.Text));
+                new Uri("http://register.php?name=" + infoText.Text + "&email=" + emailText.Text));
             }
             else
-                MessageBox.Show("", "Error", MessageBoxButton.OK);
+                MessageBox.Show("Necesita tener conexión a internet para está opción.", "Error", MessageBoxButton.OK);
         }
 
         private void logout()
@@ -96,8 +94,27 @@ namespace pillsSV.pages
             }
         }
 
-        private void btnSync_Click(object sender, RoutedEventArgs e)
+        private async void btnSync_Click(object sender, RoutedEventArgs e)
         {
+            if (btnSync.IsChecked == false)
+            {
+                dbSQLite cn = new dbSQLite();
+
+                bool checkExist = await cn.FileExists();
+
+                if (!checkExist)
+                {
+                    try
+                    {
+                        createDB cDB = new createDB();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Write(ex.ToString());
+                    }
+                }
+            }
+
             newUpdateDate();
         }
 
@@ -107,9 +124,10 @@ namespace pillsSV.pages
             data.nextUpdate = data.lastUpdate.AddDays(daysNumber.Value);
             data.name = "";
             data.email = "";
+            data.offlineData = (bool)btnDataOffline.IsChecked;
+            data.autoUpdate = (bool)btnSync.IsChecked;
 
             _profile.updateProfile(data);
-
         }
 
         private void RadNumericUpDown_LostFocus(object sender, RoutedEventArgs e)
@@ -181,5 +199,89 @@ namespace pillsSV.pages
                 MessageBox.Show("Necesita tener conexión a internet para está opción.", "Error", MessageBoxButton.OK);
         }
 
+        private void btnDataOffline_Click(object sender, RoutedEventArgs e)
+        {
+            btnSync.IsEnabled = !(bool)btnDataOffline.IsChecked;
+            daysNumber.IsEnabled = !(bool)btnDataOffline.IsChecked;
+
+            newUpdateDate();
+
+        }
+
+        private async void btnUpdate_Click(object sender, EventArgs e)
+        {
+            updateData uData = new updateData();
+
+            bool resultData = await uData.checkData();
+
+            if (resultData)
+                uData.updateInfo(data.lastUpdate);
+
+            data.lastUpdate = DateTime.Now;
+            data.nextUpdate = DateTime.Now.AddDays(15);
+
+            _profile.updateProfile(data);
+
+        }
+
+        private void menuAbout_Click(object sender, EventArgs e)
+        {
+            NavigationService.Navigate(new Uri("/Pages/about.xaml", UriKind.Relative));
+        }
+
+        private void menuHelp_Click(object sender, EventArgs e)
+        {
+            NavigationService.Navigate(new Uri("/Pages/help.xaml", UriKind.Relative));
+
+        }
+
+        private void Pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int pivot = ((Pivot)sender).SelectedIndex;
+
+            createAppBar(pivot);
+        }
+
+        private void createAppBar(int pivot)
+        {
+            ApplicationBar = new ApplicationBar();
+
+            ApplicationBarMenuItem[] AppMenu = new ApplicationBarMenuItem[2];
+
+            for (int i = 0; i < 2; i++)
+            {
+                AppMenu[i] = new ApplicationBarMenuItem();
+
+                switch (i)
+                {
+                    case 0:
+                        AppMenu[i].Text = "ayuda";
+                        AppMenu[i].Click += new EventHandler(menuHelp_Click);
+                        break;
+                    case 1:
+                        AppMenu[i].Text = "acerca de";
+                        AppMenu[i].Click += new EventHandler(menuAbout_Click);
+                        break;
+                }
+
+                ApplicationBar.MenuItems.Add(AppMenu[i]);
+            }
+
+            if (pivot == 1)
+            {
+                ApplicationBarIconButton[] AppButtons = new ApplicationBarIconButton[1];
+
+                AppButtons[0] = new ApplicationBarIconButton();
+
+                AppButtons[0].IconUri = new Uri("/Assets/AppBar/download.png", UriKind.Relative);
+                AppButtons[0].Text = "actualizar";
+                AppButtons[0].Click += new EventHandler(btnUpdate_Click);
+
+                ApplicationBar.Buttons.Add(AppButtons[0]);
+
+            }
+            else
+                ApplicationBar.Mode = ApplicationBarMode.Minimized;
+        }
     }
 }

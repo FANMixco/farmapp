@@ -17,7 +17,7 @@
 
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
-        <phone:Pivot>
+        <phone:Pivot SelectionChanged="Pivot_SelectionChanged">
             <phone:Pivot.Title>
                 <TextBlock x:Name="txtName"/>
             </phone:Pivot.Title>
@@ -26,13 +26,13 @@
             <phone:PivotItem Header="información">
                 <Grid>
                     <StackPanel>
-                        <TextBlock TextWrapping="Wrap" Text="descripción:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}"/>
-                        <TextBlock x:Name="lblADescription" TextWrapping="Wrap" Text="" Style="{StaticResource PhoneTextNormalStyle}"/>
-                        <TextBlock TextWrapping="Wrap" Text="dirección:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}"/>
-                        <TextBlock x:Name="lblAddress" TextWrapping="Wrap" Text="" Style="{StaticResource PhoneTextNormalStyle}"/>
-                        <TextBlock TextWrapping="Wrap" Text="teléfonos:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}"/>
-                        <TextBlock x:Name="lblPhone" TextWrapping="Wrap" Text="" Style="{StaticResource PhoneTextNormalStyle}"/>
-                        <TextBlock TextWrapping="Wrap" Text="puntuación:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}"/>
+                        <TextBlock TextWrapping="Wrap" Text="descripción:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}" FontSize="28"/>
+                        <TextBlock x:Name="lblADescription" TextWrapping="Wrap" Text="" Style="{StaticResource PhoneTextNormalStyle}" FontSize="24"/>
+                        <TextBlock TextWrapping="Wrap" Text="dirección:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}" FontSize="28"/>
+                        <TextBlock x:Name="lblAddress" TextWrapping="Wrap" Text="" Style="{StaticResource PhoneTextNormalStyle}" FontSize="24"/>
+                        <TextBlock TextWrapping="Wrap" Text="teléfonos:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}" FontSize="28"/>
+                        <TextBlock x:Name="lblPhone" TextWrapping="Wrap" Text="" Style="{StaticResource PhoneTextNormalStyle}" FontSize="24"/>
+                        <TextBlock TextWrapping="Wrap" Text="puntuación:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}" FontSize="28"/>
                         <telerikInput:RadRating x:Name="iRating" Margin="12,0,0,0" />
                     </StackPanel>
                 </Grid>
@@ -45,11 +45,8 @@
                         <phone:LongListSelector x:Name="llsResultsM" Margin="12,0,0,0">
                             <phone:LongListSelector.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock TextWrapping="Wrap" Text="{Binding name}"/>
-                                        <TextBlock TextWrapping="Wrap" Text=", "/>
-                                        <TextBlock TextWrapping="Wrap" Text="{Binding concentration}"/>
-                                        <TextBlock TextWrapping="Wrap" Text="{Binding units}"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding name}" FontFamily="Portable User Interface" FontSize="24"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </phone:LongListSelector.ItemTemplate>
@@ -88,15 +85,4 @@
 
         </phone:Pivot>
     </Grid>
-
-    <phone:PhoneApplicationPage.ApplicationBar>
-        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
-            <shell:ApplicationBarIconButton x:Name="btnComment" IconUri="/Assets/AppBar/add.png" Text="Comentario" Click="btnComment_Click"/>
-            <shell:ApplicationBar.MenuItems>
-                <shell:ApplicationBarMenuItem x:Name="menuProfile" Text="perfil" Click="menuProfile_Click"/>
-                <shell:ApplicationBarMenuItem x:Name="menuHelp" Text="ayuda" Click="menuHelp_Click"/>
-                <shell:ApplicationBarMenuItem x:Name="menuAbout" Text="acerca de" Click="menuAbout_Click"/>
-            </shell:ApplicationBar.MenuItems>
-        </shell:ApplicationBar>
-    </phone:PhoneApplicationPage.ApplicationBar>
 </phone:PhoneApplicationPage>

@@ -12,10 +12,11 @@ namespace sqlite.Classes
     {
         private string dbPath;
         public SQLiteConnection db;
+        private const string fileName = "db.sqlite";
 
         public dbSQLite()
         {
-            this.dbPath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "db.sqlite");
+            this.dbPath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, fileName);
         }
 
         public void close()
@@ -25,7 +26,7 @@ namespace sqlite.Classes
 
         public void createDB()
         {
-            if (!FileExists("db.sqlite").Result)
+            if (!FileExists().Result)
             {
                 open();
                 using (this.db)
@@ -44,7 +45,7 @@ namespace sqlite.Classes
             this.db = new SQLiteConnection(dbPath);
         }
 
-        private async Task<bool> FileExists(string fileName)
+        public async Task<bool> FileExists()
         {
             var result = false;
             try

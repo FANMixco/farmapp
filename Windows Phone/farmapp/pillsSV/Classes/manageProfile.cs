@@ -21,6 +21,7 @@ namespace pillsSV.Classes
         public DateTime updateMedicine { get; set; }
         public bool offlineData { get; set; }
         public bool firstTime { get; set; }
+        public bool autoUpdate { get; set; }
         public int updateFrequency { get; set; }
         public DateTime lastUpdate { get; set; }
         public DateTime nextUpdate { get; set; }
@@ -64,9 +65,10 @@ namespace pillsSV.Classes
             ui.name = "";
             ui.email = "";
             ui.offlineData = offlinedata;
-            ui.lastUpdate = Convert.ToDateTime("2014-24-07 00:00:00");
+            ui.lastUpdate = new DateTime(2014, 07, 24);
             ui.updateFrequency = 15;
             ui.nextUpdate = DateTime.Now.AddDays(15);
+            ui.autoUpdate = true;
             ui.firstTime = true;
             dataInfo = ui;
             return dataInfo;

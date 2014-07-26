@@ -23,34 +23,39 @@
             <phone:PivotItem Header="medicina">
                 <StackPanel>
                     <toolkit:PhoneTextBox x:Name="txtName" PlaceholderText="Ingrese el Nombre" FontSize="36" InputScope="Search" KeyDown="txtName_KeyDown" />
-                    <phone:LongListSelector x:Name="llsResultsM" Margin="12,0,0,0" SelectionChanged="llsResultsM_SelectionChanged">
-                        <phone:LongListSelector.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock TextWrapping="Wrap" Text="{Binding name}"/>
-                                    <TextBlock TextWrapping="Wrap" Text=", "/>
-                                    <TextBlock TextWrapping="Wrap" Text="{Binding concentration}"/>
-                                    <TextBlock TextWrapping="Wrap" Text="{Binding units}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </phone:LongListSelector.ItemTemplate>
-                    </phone:LongListSelector>
+                    <ScrollViewer>
+                        <phone:LongListSelector x:Name="llsResultsM" Margin="12,0,0,0" SelectionChanged="llsResultsM_SelectionChanged">
+                            <phone:LongListSelector.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding name}"/>
+                                        <TextBlock TextWrapping="Wrap" Text=", "/>
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding concentration}"/>
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding units}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </phone:LongListSelector.ItemTemplate>
+                        </phone:LongListSelector>
+                    </ScrollViewer>
                 </StackPanel>
             </phone:PivotItem>
 
             <phone:PivotItem Header="farmacia">
                 <StackPanel>
                     <toolkit:PhoneTextBox x:Name="txtDrugStore" PlaceholderText="Ingrese el Nombre" FontSize="36" InputScope="Search" KeyDown="txtDrugStore_KeyDown" />
-                    <phone:LongListSelector x:Name="llsResultsDS" Margin="12,0,0,0" SelectionChanged="llsResultsDS_SelectionChanged">
-                        <phone:LongListSelector.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel>
-                                    <TextBlock TextWrapping="Wrap" Text="{Binding name}"/>
-                                    <telerikInput:RadRating Value="{Binding rating}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </phone:LongListSelector.ItemTemplate>
-                    </phone:LongListSelector>
+                    <ScrollViewer>
+                        <phone:LongListSelector x:Name="llsResultsDS" Margin="12,0,0,0" SelectionChanged="llsResultsDS_SelectionChanged">
+                            <phone:LongListSelector.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding name}"/>
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding address}" Style="{StaticResource PhoneTextNormalStyle}" FontFamily="Portable User Interface"/>
+                                        <telerikInput:RadRating Value="{Binding rating}" FontFamily="Portable User Interface"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </phone:LongListSelector.ItemTemplate>
+                        </phone:LongListSelector>
+                    </ScrollViewer>
                 </StackPanel>
             </phone:PivotItem>
         </phone:Pivot>
@@ -68,7 +73,7 @@
     <phone:PhoneApplicationPage.ApplicationBar>
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
             <shell:ApplicationBarIconButton x:Name="btnLike" IconUri="/Assets/AppBar/like.png" Text="Vota" Click="btnLike_Click"/>
-            <shell:ApplicationBarIconButton x:Name="btnShare" IconUri="/Assets/AppBar1/share.png" Text="Compartir" Click="btnShare_Click"/>
+            <shell:ApplicationBarIconButton x:Name="btnShare" IconUri="/Assets/AppBar/share.png" Text="Compartir" Click="btnShare_Click"/>
             <shell:ApplicationBar.MenuItems>
                 <shell:ApplicationBarMenuItem x:Name="menuProfile" Text="perfil" Click="menuProfile_Click"/>
                 <shell:ApplicationBarMenuItem x:Name="menuHelp" Text="ayuda" Click="menuHelp_Click"/>

@@ -15,21 +15,16 @@ namespace sqlite.Classes
 {
     public class updateData
     {
-        private UserInfo data;
+        private UserInfo data = new UserInfo();
+        private manageProfile _profile = new manageProfile();
         private status deserialized;
 
         public updateData()
         {
-            //to get user information from staticData
-            using (IsolatedStorageFile myIsolatedStorage = IsolatedStorageFile.GetUserStoreForApplication())
-            {
-                using (IsolatedStorageFileStream stream = myIsolatedStorage.OpenFile("user.xml", FileMode.Open))
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(UserInfo));
-                    data = (UserInfo)serializer.Deserialize(stream);
-                }
-            }
+            //to set userData
+            _profile.getStatus();
 
+            data = _profile.getUserInfo();
         }
 
         public async Task<bool> checkData()
@@ -51,7 +46,7 @@ namespace sqlite.Classes
             return dataReturn;
         }
 
-        public async void updateInfo()
+        public async void updateInfo(DateTime lDate)
         {
             WebClient[] w = new WebClient[4];
 
@@ -62,7 +57,7 @@ namespace sqlite.Classes
             if (deserialized.updateCity != data.updateCity)
             {
                 Observable
-                    .FromEvent<DownloadStringCompletedEventArgs>(w, "DownloadStringCompleted")
+                    .FromEvent<DownloadStringCompletedEventArgs>(w[0], "DownloadStringCompleted")
                     .Subscribe(r =>
                     {
                         var des = JsonConvert.DeserializeObject<List<cities>>(r.EventArgs.Result);
@@ -95,14 +90,14 @@ namespace sqlite.Classes
                         }
                         cn.close();
                     });
-                w[0].DownloadStringAsync(new Uri("http://getCities.php"));
+                w[0].DownloadStringAsync(new Uri("http://getCities.php?lastDate=" + lDate.ToString()));
             }
 
             //check company data and if it's necesary update
             if (deserialized.updateDrugstore != data.updateDrugstore)
             {
                 Observable
-                    .FromEvent<DownloadStringCompletedEventArgs>(w, "DownloadStringCompleted")
+                    .FromEvent<DownloadStringCompletedEventArgs>(w[1], "DownloadStringCompleted")
                     .Subscribe(r =>
                     {
                         var des = JsonConvert.DeserializeObject<List<drugstores>>(r.EventArgs.Result);
@@ -134,15 +129,17 @@ namespace sqlite.Classes
                             }
                         }
                         cn.close();
+
+                        checkMedDrug(lDate.ToString());
                     });
-                w[1].DownloadStringAsync(new Uri("http://getDrugstores.php"));
+                w[1].DownloadStringAsync(new Uri("http://getDrugstores.php?lastDate=" + lDate.ToString()));
             }
 
             //check Historical Prices data and if it's necesary update
             if (deserialized.updateMedicine != data.updateMedicine)
             {
                 Observable
-                    .FromEvent<DownloadStringCompletedEventArgs>(w, "DownloadStringCompleted")
+                    .FromEvent<DownloadStringCompletedEventArgs>(w[2], "DownloadStringCompleted")
                     .Subscribe(r =>
                     {
                         var des = JsonConvert.DeserializeObject<List<med_medicine>>(r.EventArgs.Result);
@@ -151,7 +148,7 @@ namespace sqlite.Classes
                         cn.open();
 
                         //Load countries with info
-                        string table = "drugstores";
+                        string table = "med_medicine";
                         string query = "SELECT * FROM " + table;
                         List<med_medicine> curr = cn.db.Query<med_medicine>(query);
 
@@ -176,14 +173,14 @@ namespace sqlite.Classes
                         cn.close();
 
                     });
-                w[2].DownloadStringAsync(new Uri("http://getMedicines.php"));
+                w[2].DownloadStringAsync(new Uri("http://getMedicines.php?lastDate=" + lDate.ToString()));
             }
 
             //check Products data and if it's necesary update
             if (deserialized.updateState != data.updateState)
             {
                 Observable
-                    .FromEvent<DownloadStringCompletedEventArgs>(w, "DownloadStringCompleted")
+                    .FromEvent<DownloadStringCompletedEventArgs>(w[3], "DownloadStringCompleted")
                     .Subscribe(r =>
                     {
                         var des = JsonConvert.DeserializeObject<List<states>>(r.EventArgs.Result);
@@ -192,7 +189,7 @@ namespace sqlite.Classes
                         cn.open();
 
                         //Load countries with info
-                        string table = "products";
+                        string table = "states";
                         string query = "SELECT * FROM " + table;
                         List<states> curr = cn.db.Query<states>(query);
 
@@ -216,22 +213,12 @@ namespace sqlite.Classes
                         }
                         cn.close();
                     });
-                w[3].DownloadStringAsync(new Uri("http://getProducts.php"));
+                w[3].DownloadStringAsync(new Uri("http://getStates.php?lastDate=" + lDate.ToString()));
             }
 
         }
 
-        private void actionsMedicines(med_medicine usingData, string p, string table, string SQL_OPT)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void actionsDrugstores(drugstores usingData, string p, string table, string SQL_OPT)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void actionsCities(cities data, string option, string table, string SQL_Complement = "")
+        private void actionsMedicines(med_medicine usingData, string option, string table, string SQL_Complement="")
         {
             dbSQLite cnn = new dbSQLite();
             cnn.open();
@@ -241,16 +228,158 @@ namespace sqlite.Classes
                 case "I":
                     cnn.db.RunInTransaction(() =>
                     {
-                        cnn.db.Insert(new cities() { idstate = data.idstate, name = data.name, status = "I" });
+                        cnn.db.Insert(new med_medicine() { name = usingData.name, cat = usingData.cat, concentration= usingData.concentration, price= usingData.price, idmedicine=usingData.idmedicine, units=usingData.units, status = "I" });
+                    });
+                    break;
+                default:
+                    var existing = cnn.db.Query<med_medicine>("SELECT * FROM " + table + " WHERE " + SQL_Complement).FirstOrDefault();
+                    if (existing != null)
+                    {
+                        existing.name = usingData.name;
+                        existing.status = usingData.status;
+                        existing.units = usingData.units;
+                        existing.price = usingData.price;
+
+                        cnn.db.RunInTransaction(() =>
+                        {
+                            cnn.db.Update(existing);
+                        });
+                    }
+                    break;
+            }
+            cnn.close();
+        }
+
+        private void actionsDrugstores(drugstores usingData, string option, string table, string SQL_Complement = "")
+        {
+            dbSQLite cnn = new dbSQLite();
+            cnn.open();
+
+            switch (option)
+            {
+                case "I":
+                    cnn.db.RunInTransaction(() =>
+                    {
+                        cnn.db.Insert(new drugstores() { name = usingData.name, address = usingData.address, description = usingData.description, idcity = usingData.idcity, iddrugstore = usingData.iddrugstore, latitude = usingData.latitude, longitude = usingData.longitude, rating = usingData.rating, telephones = usingData.telephones, status = "I" });
+                    });
+                    break;
+                default:
+                    var existing = cnn.db.Query<drugstores>("SELECT * FROM " + table + " WHERE " + SQL_Complement).FirstOrDefault();
+                    if (existing != null)
+                    {
+                        existing.name = usingData.name;
+                        existing.telephones = usingData.telephones;
+                        existing.rating = usingData.rating;
+                        existing.longitude = usingData.longitude;
+                        existing.latitude = usingData.latitude;
+                        existing.idcity = usingData.idcity;
+                        existing.description = usingData.description;
+                        existing.address = usingData.address;
+                        existing.status = usingData.status;
+
+                        cnn.db.RunInTransaction(() =>
+                        {
+                            cnn.db.Update(existing);
+                        });
+                    }
+                    break;
+            }
+            cnn.close();
+        }
+
+        private async void checkMedDrug(string lDate)
+        {
+            WebClient w = new WebClient();
+
+            Observable
+                .FromEvent<DownloadStringCompletedEventArgs>(w, "DownloadStringCompleted")
+                .Subscribe(r =>
+                {
+                    var des = JsonConvert.DeserializeObject<List<medDrug>>(r.EventArgs.Result);
+
+                    dbSQLite cn = new dbSQLite();
+                    cn.open();
+
+                    //Load countries with info
+                    string table = "medDrug";
+                    string query = "SELECT * FROM " + table;
+                    List<medDrug> curr = cn.db.Query<medDrug>(query);
+
+                    //to check data to update, delete or insert
+                    for (int j = 0; j < des.Count; j++)
+                    {
+                        var usingData = des[j];
+
+                        string SQL_OPT = " idMeddrug=" + usingData.idMeddrug;
+
+                        switch (des[j].status)
+                        {
+                            case "I":
+                                if (des[j].idMeddrug > curr[curr.Count].idMeddrug)
+                                    actionsMedDrug(usingData, "I", table, SQL_OPT);
+                                break;
+                            default:
+                                actionsMedDrug(usingData, usingData.status, table, SQL_OPT);
+                                break;
+                        }
+                    }
+                    cn.close();
+                });
+            w.DownloadStringAsync(new Uri("http://getMedrug.php?lastDate=" + lDate));
+        }
+
+        private void actionsMedDrug(medDrug usingData, string option, string table, string SQL_Complement = "")
+        {
+            dbSQLite cnn = new dbSQLite();
+            cnn.open();
+
+            switch (option)
+            {
+                case "I":
+                    cnn.db.RunInTransaction(() =>
+                    {
+                        cnn.db.Insert(new medDrug() { iddrugstore = usingData.iddrugstore, idMeddrug = usingData.idMeddrug, idmedicine = usingData.idmedicine , status = "I" });
+                    });
+                    break;
+                default:
+                    var existing = cnn.db.Query<medDrug>("SELECT * FROM " + table + " WHERE " + SQL_Complement).FirstOrDefault();
+                    if (existing != null)
+                    {
+                        existing.iddrugstore = usingData.iddrugstore;
+                        existing.idmedicine = usingData.idmedicine;
+                        usingData.status = usingData.status;
+
+                        cnn.db.RunInTransaction(() =>
+                        {
+                            cnn.db.Update(existing);
+                        });
+                    }
+                    break;
+            }
+            cnn.close();
+        }
+
+
+        private void actionsCities(cities usingData, string option, string table, string SQL_Complement = "")
+        {
+            dbSQLite cnn = new dbSQLite();
+            cnn.open();
+
+            switch (option)
+            {
+                case "I":
+                    cnn.db.RunInTransaction(() =>
+                    {
+                        cnn.db.Insert(new cities() { idstate = usingData.idstate, name = usingData.name, status = "I" });
                     });
                     break;
                 default:
                     var existing = cnn.db.Query<cities>("SELECT * FROM " + table + " WHERE " + SQL_Complement).FirstOrDefault();
                     if (existing != null)
                     {
-                        existing.idstate = data.idstate;
-                        existing.name = data.name;
-                        existing.status = data.status;
+                        existing.idstate = usingData.idstate;
+                        existing.name = usingData.name;
+                        existing.status = usingData.status;
 
                         cnn.db.RunInTransaction(() =>
                         {
@@ -271,7 +400,7 @@ namespace sqlite.Classes
             cnn.close();
         }
 
-        private void actionsStates(states data, string option, string table, string SQL_Complement = "")
+        private void actionsStates(states usingData, string option, string table, string SQL_Complement = "")
         {
             dbSQLite cnn = new dbSQLite();
             cnn.open();
@@ -281,15 +410,15 @@ namespace sqlite.Classes
                 case "I":
                     cnn.db.RunInTransaction(() =>
                     {
-                        cnn.db.Insert(new states() { name = data.name, status = "I" });
+                        cnn.db.Insert(new states() { name = usingData.name, status = "I" });
                     });
                     break;
                 default:
                     var existing = cnn.db.Query<states>("SELECT * FROM " + table + " WHERE " + SQL_Complement).FirstOrDefault();
                     if (existing != null)
                     {
-                        existing.name = data.name;
-                        existing.status = data.status;
+                        existing.name = usingData.name;
+                        existing.status = usingData.status;
 
                         cnn.db.RunInTransaction(() =>
                         {
@@ -300,7 +429,5 @@ namespace sqlite.Classes
             }
             cnn.close();
         }
-
-      
     }
 }

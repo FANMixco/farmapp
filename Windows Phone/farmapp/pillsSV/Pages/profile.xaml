@@ -18,7 +18,7 @@
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <!--Pivot Control-->
-        <phone:Pivot Title="perfil">
+        <phone:Pivot Title="perfil" SelectionChanged="Pivot_SelectionChanged">
             <!--Pivot item one-->
             <phone:PivotItem Header="básico">
                 <Grid>
@@ -46,6 +46,8 @@
             <phone:PivotItem Header="opciones">
                 <Grid>
                     <StackPanel Margin="12,0,0,0">
+                        <TextBlock TextWrapping="Wrap" Text="Uso de información sin internet"/>
+                        <toolkit:ToggleSwitch IsChecked="true" x:Name="btnDataOffline" Click="btnDataOffline_Click"/>
                         <TextBlock TextWrapping="Wrap" Text="Actualizaciones Automáticas"/>
                         <toolkit:ToggleSwitch IsChecked="true" x:Name="btnSync" Click="btnSync_Click"/>
                         <TextBlock TextWrapping="Wrap" Text="Período de actualizaciones en días"/>

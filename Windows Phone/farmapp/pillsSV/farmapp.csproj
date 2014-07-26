@@ -95,6 +95,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Classes\cnnStatus.cs" />
+    <Compile Include="Classes\createDB.cs" />
     <Compile Include="Classes\createMap.cs" />
     <Compile Include="Classes\dbSQLite.cs" />
     <Compile Include="Classes\extraInfo.cs" />
@@ -113,9 +114,6 @@
     </Compile>
     <Compile Include="Pages\help.xaml.cs">
       <DependentUpon>help.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\mapResult.xaml.cs">
-      <DependentUpon>mapResult.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\medResult.xaml.cs">
       <DependentUpon>medResult.xaml</DependentUpon>
@@ -156,10 +154,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\mapResult.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Pages\medResult.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -182,10 +176,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\AlignmentGrid.png" />
-    <Content Include="Assets\AppBar1\share.png" />
+    <Content Include="Assets\AppBar\share.png" />
     <Content Include="Assets\AppBar\add.png" />
+    <Content Include="Assets\AppBar\close.png" />
+    <Content Include="Assets\AppBar\download.png" />
+    <Content Include="Assets\AppBar\eye.png" />
     <Content Include="Assets\AppBar\like.png" />
     <Content Include="Assets\AppBar\marker.png" />
+    <Content Include="Assets\AppBar\pill.png" />
+    <Content Include="Assets\AppBar\road.png" />
     <Content Include="Assets\ApplicationIcon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

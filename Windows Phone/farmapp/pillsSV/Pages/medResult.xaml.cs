@@ -12,26 +12,35 @@ using sqlite.Classes;
 using Microsoft.Phone.Reactive;
 using Newtonsoft.Json;
 using Microsoft.Phone.Tasks;
+using Microsoft.Phone.Maps.Controls;
 
 namespace pillsSV.pages
 {
     public partial class medResult : PhoneApplicationPage
     {
+        createMap cm;
         private UserInfo data = new UserInfo();
         private manageProfile _profile = new manageProfile();
         private cnnStatus cnnstatus = new cnnStatus();
         public medResult()
         {
             InitializeComponent();
+            Microsoft.Phone.Maps.MapsSettings.ApplicationContext.ApplicationId = "5b810a60-9962-4e48-a3c0-2f41a27a7961";
+            Microsoft.Phone.Maps.MapsSettings.ApplicationContext.AuthenticationToken = "lPWk0ZKoahL1w2CbtCGKDw";
+
+            _profile.getStatus();
+
+            data = _profile.getUserInfo();
+
+            cm = new createMap(mapResult);
+            cm.setCenter(13.794185, -88.89653, 8);
+
+            GetSinglePositionAsync(false);
         }
 
         private void PhoneApplicationPage_Loaded(object sender, RoutedEventArgs e)
         {
             string id = NavigationContext.QueryString["id"];
-
-            _profile.getStatus();
-
-            data = _profile.getUserInfo();
 
             List<med_medicine> medicine;
 
@@ -102,7 +111,13 @@ namespace pillsSV.pages
                     dbSQLite cn = new dbSQLite();
                     cn.open();
 
-                    string query = "SELECT drugstores.iddrugstore, name, address, rating, latitude, longitude FROM drugstores INNER JOIN medDrug ON drugstores.iddrugstore = medDrug.iddrugstore WHERE medDrug.idmedicine=" + id;
+                    string query = @"SELECT drugstores.iddrugstore, drugstores.name,
+                                    (address || ', ' || cities.name || ', ' || states.name) address, rating, latitude, longitude
+                                    FROM drugstores
+                                    INNER JOIN medDrug ON drugstores.iddrugstore = medDrug.iddrugstore
+                                    INNER JOIN cities ON cities.idcity=drugstores.idcity
+                                    INNER JOIN states ON states.idstate=cities.idstate
+                                    WHERE medDrug.idmedicine=" + id;
                     drugstore = cn.db.Query<drugstores>(query);
 
                     if (drugstore.Count > 0)
@@ -172,10 +187,10 @@ namespace pillsSV.pages
 
         private void menuReport_Click(object sender, EventArgs e)
         {
-            GetSinglePositionAsync();
+            GetSinglePositionAsync(true);
         }
 
-        public async void GetSinglePositionAsync()
+        public async void GetSinglePositionAsync(bool report)
         {
             if (cnnstatus.status())
             {
@@ -189,11 +204,25 @@ namespace pillsSV.pages
 
                     geoposition = await geolocator.GetGeopositionAsync();
 
-                    ShareStatusTask shareStatusTask = new ShareStatusTask();
+                    if (report)
+                    {
+                        ShareStatusTask shareStatusTask = new ShareStatusTask();
 
-                    shareStatusTask.Status = "@Defensoria_910 #Abuso " + txtName.Text + " http://bing.com/maps/?cp=" + Math.Round(geoposition.Coordinate.Latitude, 5).ToString() + "~" + Math.Round(geoposition.Coordinate.Longitude, 5).ToString() + "&lvl=16&sp=point." + Math.Round(geoposition.Coordinate.Latitude, 5).ToString() + "_" + Math.Round(geoposition.Coordinate.Longitude, 5).ToString() + "_";
+                        shareStatusTask.Status = "@Defensoria_910 #Abuso " + txtName.Text + " http://bing.com/maps/?cp=" + Math.Round(geoposition.Coordinate.Latitude, 5).ToString() + "~" + Math.Round(geoposition.Coordinate.Longitude, 5).ToString() + "&lvl=16&sp=point." + Math.Round(geoposition.Coordinate.Latitude, 5).ToString() + "_" + Math.Round(geoposition.Coordinate.Longitude, 5).ToString() + "_";
 
-                    shareStatusTask.Show();
+                        shareStatusTask.Show();
+                    }
+                    else
+                    {
+                        cm.setCenter(geoposition.Coordinate.Latitude, geoposition.Coordinate.Longitude, 12);
+
+                        List<Tuple<double, double>> locations = new List<Tuple<double, double>>();
+                        locations.Add(new Tuple<double, double>(geoposition.Coordinate.Latitude, geoposition.Coordinate.Longitude));
+
+                        cm.addPushpins(locations);
+
+                        load_Places(geoposition.Coordinate.Latitude, geoposition.Coordinate.Longitude);
+                    }
                 }
                 catch
                 {
@@ -203,6 +232,149 @@ namespace pillsSV.pages
             }
             else
                 MessageBox.Show("Necesita tener conexión a internet para está opción.", "Error", MessageBoxButton.OK);
+        }
+
+        private async void load_Places(double lat, double lng)
+        {
+
+            if (data.offlineData)
+            {
+                dbSQLite cn = new dbSQLite();
+                cn.open();
+
+                //Load all places
+                string query = "SELECT * FROM drugstores";
+                List<drugstores> placeInfo = cn.db.Query<drugstores>(query);
+
+                for (int i = 0; i < placeInfo.Count -1; i++)
+                {
+                    var values = placeInfo[i];
+                    List<Tuple<double, double, string, int>> locations = new List<Tuple<double, double, string, int>>();
+                    locations.Add(new Tuple<double, double, string, int>(values.latitude, values.longitude, values.name, values.iddrugstore));
+
+                    cm.addMultiplePushpins(locations);
+                }
+                cn.close();
+            }
+            else
+            {
+                if (cnnstatus.status())
+                {
+                    WebClient w = new WebClient();
+
+                    Observable
+                    .FromEvent<DownloadStringCompletedEventArgs>(w, "DownloadStringCompleted")
+                    .Subscribe(r =>
+                    {
+                        var drugstore = JsonConvert.DeserializeObject<List<Tuple<double, double, string, int>>>(r.EventArgs.Result);
+
+                        for (int i = 0; i < drugstore.Count - 1; i++)
+                        {
+                            var values = drugstore[i];
+                            List<Tuple<double, double, string, int>> locations = new List<Tuple<double, double, string, int>>();
+                            locations.Add(new Tuple<double, double, string, int>(drugstore[i].Item1, drugstore[i].Item2, drugstore[i].Item3, drugstore[i].Item4));
+
+                            cm.addMultiplePushpins(locations);
+                        }
+                    });
+                    w.DownloadStringAsync(
+                    new Uri("http://getNearLocations.php?lat=" + lat.ToString() + "&lng=" + lng.ToString()));
+                }
+            }
+        }
+
+        private void createAppBar(int multiple)
+        {
+
+            ApplicationBar = new ApplicationBar();
+
+            ApplicationBarIconButton[] AppButtons = new ApplicationBarIconButton[multiple];
+            
+            ApplicationBarMenuItem[] AppMenu = new ApplicationBarMenuItem[4];
+
+            for (int i = 0; i < 4; i++)
+            { 
+                AppMenu[i] = new ApplicationBarMenuItem();
+
+                switch (i)
+                {
+                    case 0:
+                        AppMenu[i].Text = "reportar...";
+                        AppMenu[i].Click += new EventHandler(menuReport_Click);
+                        break;
+                    case 1:
+                        AppMenu[i].Text = "perfil";
+                        AppMenu[i].Click += new EventHandler(menuProfile_Click);
+                        break;
+                    case 2:
+                        AppMenu[i].Text = "ayuda";
+                        AppMenu[i].Click += new EventHandler(menuHelp_Click);
+                        break;
+                    case 3:
+                        AppMenu[i].Text = "acerca de";
+                        AppMenu[i].Click += new EventHandler(menuAbout_Click);
+                        break;
+                }
+
+                ApplicationBar.MenuItems.Add(AppMenu[i]);
+            }
+
+            if (multiple == 1)
+            {
+                AppButtons[0] = new ApplicationBarIconButton();
+
+                AppButtons[0].IconUri = new Uri("/Assets/AppBar/share.png", UriKind.Relative);
+                AppButtons[0].Text = "compartir";
+                AppButtons[0].Click += new EventHandler(btnShare_Click);
+
+                ApplicationBar.Buttons.Add(AppButtons[0]);
+            }
+            else if (multiple > 1)
+            {
+                AppButtons[0] = new ApplicationBarIconButton();
+                AppButtons[1] = new ApplicationBarIconButton();
+
+                AppButtons[0].IconUri = new Uri("/Assets/AppBar/eye.png", UriKind.Relative);
+                AppButtons[0].Text = "aerea";
+                AppButtons[1].IconUri = new Uri("/Assets/AppBar/road.png", UriKind.Relative);
+                AppButtons[1].Text = "carretera";
+
+                AppButtons[0].Click += new EventHandler(road_Click);
+                AppButtons[1].Click += new EventHandler(aerial_Click);
+
+                ApplicationBar.Buttons.Add(AppButtons[0]);
+                ApplicationBar.Buttons.Add(AppButtons[1]);
+            }
+            else
+                ApplicationBar.Mode = ApplicationBarMode.Minimized;
+        }
+
+        private void road_Click(object sender, EventArgs e)
+        {
+            mapResult.CartographicMode = MapCartographicMode.Road;
+        }
+
+        private void aerial_Click(object sender, EventArgs e)
+        {
+            mapResult.CartographicMode = MapCartographicMode.Aerial;
+        }
+
+        private void Pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int index = ((Pivot)sender).SelectedIndex;
+
+            switch(index)
+            {
+                case 0:
+                    createAppBar(1);
+                    break;
+                case 1:
+                    createAppBar(2);
+                    break;
+                case 2:
+                    createAppBar(0);
+                    break;
+            }
         }
     }
 }

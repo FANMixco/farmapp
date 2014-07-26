@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:telerikInput="clr-namespace:Telerik.Windows.Controls;assembly=Telerik.Windows.Controls.Input"
+    xmlns:maps="clr-namespace:Microsoft.Phone.Maps.Controls;assembly=Microsoft.Phone.Maps"
     x:Class="pillsSV.pages.medResult"
     mc:Ignorable="d"
     FontFamily="{StaticResource PhoneFontFamilyNormal}"
@@ -16,8 +17,7 @@
 
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
-        <!--Pivot Control-->
-        <phone:Pivot>
+        <phone:Pivot SelectionChanged="Pivot_SelectionChanged">
 
             <phone:Pivot.Title>
                 <TextBlock x:Name="txtName"/>
@@ -28,17 +28,23 @@
                 <Grid>
                     <ScrollViewer>
                         <StackPanel>
-                            <TextBlock TextWrapping="Wrap" Text="concentración:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}"/>
-                            <TextBlock x:Name="txtConcentration" TextWrapping="Wrap"  Style="{StaticResource PhoneTextNormalStyle}"/>
-                            <TextBlock TextWrapping="Wrap" Text="unidades:" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}"/>
-                            <TextBlock x:Name="txtUnits" TextWrapping="Wrap"  Style="{StaticResource PhoneTextNormalStyle}"/>
-                            <TextBlock TextWrapping="Wrap" Text="precio:" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}"/>
-                            <TextBlock x:Name="txtPrice" TextWrapping="Wrap"  Style="{StaticResource PhoneTextNormalStyle}"/>
-                            <TextBlock TextWrapping="Wrap" Text="categoría:" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}"/>
-                            <TextBlock x:Name="txtCat" TextWrapping="Wrap" Style="{StaticResource PhoneTextNormalStyle}"/>
+                            <TextBlock TextWrapping="Wrap" Text="concentración:" FontWeight="Bold" Style="{StaticResource PhoneTextNormalStyle}" FontSize="28"/>
+                            <TextBlock x:Name="txtConcentration" TextWrapping="Wrap"  Style="{StaticResource PhoneTextNormalStyle}" FontSize="24"/>
+                            <TextBlock TextWrapping="Wrap" Text="unidades:" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}" FontSize="28"/>
+                            <TextBlock x:Name="txtUnits" TextWrapping="Wrap"  Style="{StaticResource PhoneTextNormalStyle}" FontSize="24"/>
+                            <TextBlock TextWrapping="Wrap" Text="precio:" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}" FontSize="28"/>
+                            <TextBlock x:Name="txtPrice" TextWrapping="Wrap"  Style="{StaticResource PhoneTextNormalStyle}" FontSize="24"/>
+                            <TextBlock TextWrapping="Wrap" Text="categoría:" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}" FontSize="28"/>
+                            <TextBlock x:Name="txtCat" TextWrapping="Wrap" Style="{StaticResource PhoneTextNormalStyle}" FontSize="24"/>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
+            </phone:PivotItem>
+
+            <phone:PivotItem Header="lugares cercanos">
+
+                <maps:Map x:Name="mapResult" />
+
             </phone:PivotItem>
 
             <!--Pivot item two-->
@@ -48,9 +54,10 @@
                         <phone:LongListSelector x:Name="llsResultsDS" SelectionChanged="llsResultsDS_SelectionChanged" Margin="12,0,0,0">
                             <phone:LongListSelector.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel>
-                                        <TextBlock TextWrapping="Wrap" Text="{Binding name}" Style="{StaticResource PhoneTextNormalStyle}"/>
-                                        <telerikInput:RadRating Value="{Binding rating}"/>
+                                    <StackPanel Margin="0,0,0,10">
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding name}" Style="{StaticResource PhoneTextNormalStyle}" FontFamily="Portable User Interface" FontSize="24"/>
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding address}" Style="{StaticResource PhoneTextNormalStyle}" FontFamily="Portable User Interface" FontSize="24"/>
+                                        <telerikInput:RadRating Value="{Binding rating}" Margin="12,0,0,0"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </phone:LongListSelector.ItemTemplate>
@@ -58,17 +65,7 @@
                     </ScrollViewer>
                 </Grid>
             </phone:PivotItem>
+
         </phone:Pivot>
     </Grid>
-    <phone:PhoneApplicationPage.ApplicationBar>
-        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
-            <shell:ApplicationBarIconButton x:Name="btnShare" IconUri="/Assets/AppBar1/share.png" Text="compartir" Click="btnShare_Click"/>
-            <shell:ApplicationBar.MenuItems>
-                <shell:ApplicationBarMenuItem x:Name="menuReport" Text="reportar" Click="menuReport_Click"/>
-                <shell:ApplicationBarMenuItem x:Name="menuProfile" Text="perfil" Click="menuProfile_Click"/>
-                <shell:ApplicationBarMenuItem x:Name="menuHelp" Text="ayuda" Click="menuHelp_Click"/>
-                <shell:ApplicationBarMenuItem x:Name="menuAbout" Text="acerca de" Click="menuAbout_Click"/>
-            </shell:ApplicationBar.MenuItems>
-        </shell:ApplicationBar>
-    </phone:PhoneApplicationPage.ApplicationBar>
 </phone:PhoneApplicationPage>
